@@ -1,6 +1,9 @@
-package com.java.billingservice.dto;
+package com.java.billingservice.dto.billing;
 
+import com.java.billingservice.dto.bill.BillResponseDTO;
 import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -14,5 +17,5 @@ public class BillingAccountResponseDTO {
     private String creationDate;
     private String updateDate;
 
-    //private List<BillDTO> bills;
+    private List<BillResponseDTO> bills;
 }

@@ -33,4 +33,13 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest().body(errors);
     }
+
+    public ResponseEntity<Map<String, String>> handleBillNotFoundException(BillNotFoundException ex){
+
+        log.warn("Bill with ID {} not found", ex.getMessage());
+        Map<String,String> errors = new HashMap<>();
+        errors.put("message", "Bill with ID {} not found");
+
+        return ResponseEntity.badRequest().body(errors);
+    }
 }

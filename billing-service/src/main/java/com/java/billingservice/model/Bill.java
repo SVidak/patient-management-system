@@ -26,7 +26,6 @@ public class Bill {
     @NotNull
     private LocalDate createdDate;
 
-    @NotNull
     private LocalDate payedDate;
 
     @NotNull

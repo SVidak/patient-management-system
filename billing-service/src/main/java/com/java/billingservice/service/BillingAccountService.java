@@ -1,10 +1,10 @@
 package com.java.billingservice.service;
 
-import com.java.billingservice.dto.BillingAccountRequestDTO;
-import com.java.billingservice.dto.BillingAccountResponseDTO;
+import com.java.billingservice.dto.billing.BillingAccountRequestDTO;
+import com.java.billingservice.dto.billing.BillingAccountResponseDTO;
 import com.java.billingservice.exception.BillingAccountAlreadyExistsException;
 import com.java.billingservice.exception.BillingAccountNotFoundException;
-import com.java.billingservice.mapper.BillingAccountMapper;
+import com.java.billingservice.mapper.billing.BillingAccountMapper;
 import com.java.billingservice.model.BillingAccount;
 import com.java.billingservice.repository.BillingAccountRepository;
 import org.springframework.stereotype.Service;
@@ -50,6 +50,19 @@ public class BillingAccountService {
         BillingAccount billingAccount = BillingAccountMapper.toBillingAccount(billingAccountRequestDTO);
         billingAccount.setCreationDate(LocalDate.now());
         billingAccount.setLastUpdateDate(LocalDate.now());
+        billingAccountRepository.save(billingAccount);
+
+        return BillingAccountMapper.toBillingAccountResponseDTO(billingAccount);
+    }
+
+    public BillingAccountResponseDTO updateBillingAccount(UUID patientId, BillingAccountRequestDTO billingAccountRequestDTO) {
+
+        BillingAccount billingAccount = billingAccountRepository.findByPatientId(patientId)
+                .orElseThrow(() -> new BillingAccountNotFoundException("BillingAccount with Patient ID: " + patientId + "not found"));
+
+        billingAccount.setLastUpdateDate(LocalDate.now());
+
+        //Add bills to account
         billingAccountRepository.save(billingAccount);
 
         return BillingAccountMapper.toBillingAccountResponseDTO(billingAccount);

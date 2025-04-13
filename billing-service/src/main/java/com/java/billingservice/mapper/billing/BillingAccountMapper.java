@@ -1,10 +1,9 @@
-package com.java.billingservice.mapper;
+package com.java.billingservice.mapper.billing;
 
-import com.java.billingservice.dto.BillingAccountRequestDTO;
-import com.java.billingservice.dto.BillingAccountResponseDTO;
+import com.java.billingservice.dto.billing.BillingAccountRequestDTO;
+import com.java.billingservice.dto.billing.BillingAccountResponseDTO;
 import com.java.billingservice.model.BillingAccount;
 
-import java.time.LocalDate;
 import java.util.UUID;
 
 public class BillingAccountMapper {
@@ -22,6 +21,7 @@ public class BillingAccountMapper {
     public static BillingAccount toBillingAccount(BillingAccountRequestDTO billingAccountRequestDTO) {
         BillingAccount billingAccount = new BillingAccount();
         billingAccount.setPatientId(UUID.fromString(billingAccountRequestDTO.getPatientId()));
+
         return billingAccount;
     }
 }

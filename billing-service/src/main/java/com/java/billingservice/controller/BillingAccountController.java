@@ -1,7 +1,7 @@
 package com.java.billingservice.controller;
 
-import com.java.billingservice.dto.BillingAccountRequestDTO;
-import com.java.billingservice.dto.BillingAccountResponseDTO;
+import com.java.billingservice.dto.billing.BillingAccountRequestDTO;
+import com.java.billingservice.dto.billing.BillingAccountResponseDTO;
 import com.java.billingservice.service.BillingAccountService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
