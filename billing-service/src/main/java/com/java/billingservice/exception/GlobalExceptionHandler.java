@@ -23,4 +23,14 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest().body(errors);
     }
+
+    @ExceptionHandler(BillingAccountNotFoundException.class)
+    public ResponseEntity<Map<String,String>> handleBillingAccountNotFoundException(BillingAccountNotFoundException ex){
+
+        log.warn("BillingAccount with ID {} not found", ex.getMessage());
+        Map<String,String> errors = new HashMap<>();
+        errors.put("message", "BillingAccount with ID {} not found");
+
+        return ResponseEntity.badRequest().body(errors);
+    }
 }

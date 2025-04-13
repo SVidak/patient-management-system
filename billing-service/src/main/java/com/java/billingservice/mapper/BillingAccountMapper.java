@@ -22,9 +22,6 @@ public class BillingAccountMapper {
     public static BillingAccount toBillingAccount(BillingAccountRequestDTO billingAccountRequestDTO) {
         BillingAccount billingAccount = new BillingAccount();
         billingAccount.setPatientId(UUID.fromString(billingAccountRequestDTO.getPatientId()));
-        billingAccount.setCreationDate(LocalDate.parse(billingAccountRequestDTO.getCreationDate()));
-        billingAccount.setLastUpdateDate(LocalDate.parse(billingAccountRequestDTO.getLastUpdateDate()));
-
         return billingAccount;
     }
 }

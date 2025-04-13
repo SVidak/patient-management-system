@@ -30,8 +30,6 @@ public class BillingGrpcService extends BillingServiceGrpc.BillingServiceImplBas
 
         BillingAccountRequestDTO billingAccountRequestDTO = BillingAccountRequestDTO.builder()
                 .patientId(String.valueOf(UUID.fromString(billingRequest.getPatientId())))
-                .creationDate(String.valueOf(LocalDate.now()))
-                .lastUpdateDate(String.valueOf(LocalDate.now()))
                 .build();
 
         BillingAccountResponseDTO billingAccountResponseDTO = billingAccountService.createBillingAccount(billingAccountRequestDTO);
