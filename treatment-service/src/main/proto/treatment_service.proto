@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "treatment";
+
+service TreatmentService {
+  rpc GetTreatmentById(GetTreatmentByIdRequest) returns (GetTreatmentByIdResponse);
+  rpc GetAllTreatments(GetAllTreatmentsRequest) returns (GetAllTreatmentsResponse);
+  rpc CreateTreatment(CreateTreatmentRequest) returns (CreateTreatmentResponse);
+  rpc UpdateTreatment(UpdateTreatmentRequest) returns (UpdateTreatmentResponse);
+  rpc DeleteTreatment(DeleteTreatmentRequest) returns (DeleteTreatmentResponse);
+}
+
+message Treatment {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string price = 4;
+  string duration = 5;
+}
+
+message GetTreatmentByIdRequest {
+  string id = 1;
+}
+
+message GetTreatmentByIdResponse {
+  Treatment treatment = 1;
+}
+
+message GetAllTreatmentsRequest {
+}
+
+message GetAllTreatmentsResponse {
+  repeated Treatment treatments = 1;
+}
+
+message CreateTreatmentRequest {
+  string name = 1;
+  string description = 2;
+  string price = 3;
+  string duration = 4;
+}
+
+message CreateTreatmentResponse {
+  Treatment treatment = 1;
+}
+
+message UpdateTreatmentRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string price = 4;
+  string duration = 5;
+}
+
+message UpdateTreatmentResponse {
+  Treatment treatment = 1;
+}
+
+message DeleteTreatmentRequest {
+  string id = 1;
+}
+
+message DeleteTreatmentResponse {
+  bool success = 1;
+}
