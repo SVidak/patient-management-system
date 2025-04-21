@@ -1,5 +1,6 @@
 package com.java.treatmentservice.mapper;
 
+import com.java.treatmentservice.dto.TreatmentRequestDTO;
 import com.java.treatmentservice.dto.TreatmentResponseDTO;
 
 import java.util.List;
@@ -20,5 +21,25 @@ public class TreatmentGrpcMapper {
 
     public static List<treatment.Treatment> toListGrpc(List<TreatmentResponseDTO> treatmentResponseDTOList) {
         return treatmentResponseDTOList.stream().map(TreatmentGrpcMapper::toGrpc).collect(Collectors.toList());
+    }
+
+    public static TreatmentRequestDTO toTreatmentRequestDTO(treatment.CreateTreatmentRequest createTreatmentRequest) {
+        TreatmentRequestDTO dto = new TreatmentRequestDTO();
+        dto.setName(createTreatmentRequest.getName());
+        dto.setDescription(createTreatmentRequest.getDescription());
+        dto.setPrice(createTreatmentRequest.getPrice());
+        dto.setDuration(createTreatmentRequest.getDuration());
+
+        return dto;
+    }
+
+    public static TreatmentRequestDTO toTreatmentRequestDTO(treatment.UpdateTreatmentRequest updateTreatmentRequest) {
+        TreatmentRequestDTO dto = new TreatmentRequestDTO();
+        dto.setName(updateTreatmentRequest.getName());
+        dto.setDescription(updateTreatmentRequest.getDescription());
+        dto.setPrice(updateTreatmentRequest.getPrice());
+        dto.setDuration(updateTreatmentRequest.getDuration());
+
+        return dto;
     }
 }

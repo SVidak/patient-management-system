@@ -6,6 +6,7 @@ import com.java.treatmentservice.exception.TreatmentNotFoundException;
 import com.java.treatmentservice.mapper.TreatmentMapper;
 import com.java.treatmentservice.model.Treatment;
 import com.java.treatmentservice.repository.TreatmentRepository;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,20 +26,20 @@ public class TreatmentService {
         return treatments.stream().map(TreatmentMapper::toTreatmentResponseDTO).toList();
     }
 
-    public TreatmentResponseDTO getTreatmentById(String id) {
+    public TreatmentResponseDTO getTreatmentById(@Valid String id) {
 
         return TreatmentMapper.toTreatmentResponseDTO(treatmentRepository.findById(id)
                 .orElseThrow(() -> new TreatmentNotFoundException("Treatment with ID: " + id + "not found")));
     }
 
-    public TreatmentResponseDTO createTreatment(TreatmentRequestDTO treatmentRequestDTO) {
+    public TreatmentResponseDTO createTreatment(@Valid TreatmentRequestDTO treatmentRequestDTO) {
 
         Treatment newTreatment = TreatmentMapper.toTreatment(treatmentRequestDTO);
 
         return TreatmentMapper.toTreatmentResponseDTO(treatmentRepository.save(newTreatment));
     }
 
-    public TreatmentResponseDTO updateTreatment(String id, TreatmentRequestDTO treatmentRequestDTO) {
+    public TreatmentResponseDTO updateTreatment(String id, @Valid TreatmentRequestDTO treatmentRequestDTO) {
 
         Treatment treatment = treatmentRepository.findById(id)
                 .orElseThrow(() -> new TreatmentNotFoundException("Treatment with ID: " + id + "not found"));

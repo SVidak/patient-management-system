@@ -2,10 +2,14 @@ package com.java.treatmentservice.grpc;
 
 import com.java.treatmentservice.dto.TreatmentRequestDTO;
 import com.java.treatmentservice.dto.TreatmentResponseDTO;
+import com.java.treatmentservice.exception.TreatmentNotFoundException;
 import com.java.treatmentservice.mapper.TreatmentGrpcMapper;
 import com.java.treatmentservice.service.TreatmentService;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import treatment.CreateTreatmentResponse;
 import treatment.TreatmentServiceGrpc;
 
@@ -14,6 +18,7 @@ import java.util.List;
 @GrpcService
 public class TreatmentGrpcService extends TreatmentServiceGrpc.TreatmentServiceImplBase {
 
+    private static final Logger log = LoggerFactory.getLogger(TreatmentGrpcService.class);
     private final TreatmentService treatmentService;
 
     public TreatmentGrpcService(TreatmentService treatmentService) {
@@ -23,80 +28,123 @@ public class TreatmentGrpcService extends TreatmentServiceGrpc.TreatmentServiceI
     @Override
     public void getTreatmentById(treatment.GetTreatmentByIdRequest getTreatmentByIdRequest, StreamObserver<treatment.GetTreatmentByIdResponse> responseObserver) {
 
-        TreatmentResponseDTO treatmentResponseDTO = treatmentService.getTreatmentById(getTreatmentByIdRequest.getId());
+        log.info("getTreatmentById request received: {}", getTreatmentByIdRequest.toString());
 
-        treatment.Treatment grpcTreatment = TreatmentGrpcMapper.toGrpc(treatmentResponseDTO);
+        try {
+            TreatmentResponseDTO treatmentResponseDTO = treatmentService.getTreatmentById(getTreatmentByIdRequest.getId());
 
-        treatment.GetTreatmentByIdResponse getTreatmentByIdResponse = treatment.GetTreatmentByIdResponse.newBuilder()
-                .setTreatment(grpcTreatment).build();
+            treatment.Treatment grpcTreatment = TreatmentGrpcMapper.toGrpc(treatmentResponseDTO);
+
+            treatment.GetTreatmentByIdResponse getTreatmentByIdResponse = treatment.GetTreatmentByIdResponse.newBuilder()
+                    .setTreatment(grpcTreatment).build();
 
 
-        responseObserver.onNext(getTreatmentByIdResponse);
-        responseObserver.onCompleted();
+            responseObserver.onNext(getTreatmentByIdResponse);
+            responseObserver.onCompleted();
+        } catch (TreatmentNotFoundException e) {
+            responseObserver.onError(Status.NOT_FOUND
+                    .withDescription("Treatment not found with ID: " + getTreatmentByIdRequest.getId())
+                    .asRuntimeException());
+        } catch (Exception e) {
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription("Internal server error")
+                    .augmentDescription(e.getMessage())
+                    .asRuntimeException());
+        }
     }
 
     @Override
     public void getAllTreatments(treatment.GetAllTreatmentsRequest getAllTreatmentsRequest, StreamObserver<treatment.GetAllTreatmentsResponse> responseObserver) {
 
-        List<TreatmentResponseDTO> allTreatments = treatmentService.getTreatments();
+        log.info("getAllTreatments request received: {}", getAllTreatmentsRequest.toString());
 
-        List<treatment.Treatment> grpcTreatments = TreatmentGrpcMapper.toListGrpc(allTreatments);
+        try {
+            List<TreatmentResponseDTO> allTreatments = treatmentService.getTreatments();
 
-        treatment.GetAllTreatmentsResponse getAllTreatmentsResponse = treatment.GetAllTreatmentsResponse.newBuilder()
-                .addAllTreatments(grpcTreatments).build();
+            List<treatment.Treatment> grpcTreatments = TreatmentGrpcMapper.toListGrpc(allTreatments);
 
-        responseObserver.onNext(getAllTreatmentsResponse);
-        responseObserver.onCompleted();
+            treatment.GetAllTreatmentsResponse getAllTreatmentsResponse = treatment.GetAllTreatmentsResponse.newBuilder()
+                    .addAllTreatments(grpcTreatments).build();
+
+            responseObserver.onNext(getAllTreatmentsResponse);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription("Internal server error")
+                    .augmentDescription(e.getMessage())
+                    .asRuntimeException());
+        }
     }
 
     @Override
     public void createTreatment(treatment.CreateTreatmentRequest createTreatmentRequest, StreamObserver<CreateTreatmentResponse> responseObserver) {
 
-        TreatmentRequestDTO treatmentRequestDTO = new TreatmentRequestDTO();
-        treatmentRequestDTO.setName(createTreatmentRequest.getName());
-        treatmentRequestDTO.setDescription(createTreatmentRequest.getDescription());
-        treatmentRequestDTO.setPrice(createTreatmentRequest.getPrice());
-        treatmentRequestDTO.setDuration(createTreatmentRequest.getDuration());
+        log.info("createTreatmentRequest request received: {}", createTreatmentRequest.toString());
 
-        TreatmentResponseDTO treatmentResponseDTO = treatmentService.createTreatment(treatmentRequestDTO);
+        try {
+            TreatmentRequestDTO treatmentRequestDTO = TreatmentGrpcMapper.toTreatmentRequestDTO(createTreatmentRequest);
 
-        treatment.Treatment grpcTreatment = TreatmentGrpcMapper.toGrpc(treatmentResponseDTO);
+            TreatmentResponseDTO treatmentResponseDTO = treatmentService.createTreatment(treatmentRequestDTO);
 
-        treatment.CreateTreatmentResponse createTreatmentResponse = treatment.CreateTreatmentResponse.newBuilder()
-                .setTreatment(grpcTreatment).build();
+            treatment.Treatment grpcTreatment = TreatmentGrpcMapper.toGrpc(treatmentResponseDTO);
 
-        responseObserver.onNext(createTreatmentResponse);
-        responseObserver.onCompleted();
+            CreateTreatmentResponse createTreatmentResponse = CreateTreatmentResponse.newBuilder()
+                    .setTreatment(grpcTreatment).build();
 
+            responseObserver.onNext(createTreatmentResponse);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription("Internal server error")
+                    .augmentDescription(e.getMessage())
+                    .asRuntimeException());
+        }
     }
 
     @Override
     public void updateTreatment(treatment.UpdateTreatmentRequest updateTreatmentRequest, StreamObserver<treatment.UpdateTreatmentResponse> responseObserver) {
 
-        TreatmentRequestDTO treatmentRequestDTO = new TreatmentRequestDTO();
-        treatmentRequestDTO.setName(updateTreatmentRequest.getName());
-        treatmentRequestDTO.setDescription(updateTreatmentRequest.getDescription());
-        treatmentRequestDTO.setPrice(updateTreatmentRequest.getPrice());
-        treatmentRequestDTO.setDuration(updateTreatmentRequest.getDuration());
+        log.info("updateTreatmentRequest request received: {}", updateTreatmentRequest.toString());
 
-        TreatmentResponseDTO treatmentResponseDTO = treatmentService.updateTreatment(updateTreatmentRequest.getId(), treatmentRequestDTO);
+        try {
+            TreatmentRequestDTO treatmentRequestDTO = TreatmentGrpcMapper.toTreatmentRequestDTO(updateTreatmentRequest);
 
-        treatment.Treatment grpcTreatment = TreatmentGrpcMapper.toGrpc(treatmentResponseDTO);
+            TreatmentResponseDTO treatmentResponseDTO = treatmentService.updateTreatment(updateTreatmentRequest.getId(), treatmentRequestDTO);
 
-        treatment.UpdateTreatmentResponse updateTreatmentResponse = treatment.UpdateTreatmentResponse.newBuilder()
-                .setTreatment(grpcTreatment).build();
+            treatment.Treatment grpcTreatment = TreatmentGrpcMapper.toGrpc(treatmentResponseDTO);
 
-        responseObserver.onNext(updateTreatmentResponse);
-        responseObserver.onCompleted();
+            treatment.UpdateTreatmentResponse updateTreatmentResponse = treatment.UpdateTreatmentResponse.newBuilder()
+                    .setTreatment(grpcTreatment).build();
+
+            responseObserver.onNext(updateTreatmentResponse);
+            responseObserver.onCompleted();
+        } catch (TreatmentNotFoundException e) {
+            responseObserver.onError(Status.NOT_FOUND
+                    .withDescription("Treatment not found with ID: " + updateTreatmentRequest.getId())
+                    .asRuntimeException());
+        } catch (Exception e) {
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription("Internal server error")
+                    .augmentDescription(e.getMessage())
+                    .asRuntimeException());
+        }
     }
 
     @Override
     public void deleteTreatment(treatment.DeleteTreatmentRequest deleteTreatmentRequest, StreamObserver<treatment.DeleteTreatmentResponse> responseObserver) {
 
-        treatmentService.deleteTreatment(deleteTreatmentRequest.getId());
+        log.info("deleteTreatmentRequest request received: {}", deleteTreatmentRequest.toString());
 
-        responseObserver.onNext(treatment.DeleteTreatmentResponse.newBuilder().build());
-        responseObserver.onCompleted();
+        try {
+            treatmentService.deleteTreatment(deleteTreatmentRequest.getId());
+
+            responseObserver.onNext(treatment.DeleteTreatmentResponse.newBuilder().build());
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription("Internal server error")
+                    .augmentDescription(e.getMessage())
+                    .asRuntimeException());
+        }
     }
-
 }
