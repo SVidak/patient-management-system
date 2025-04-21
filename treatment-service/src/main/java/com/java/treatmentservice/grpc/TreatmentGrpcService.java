@@ -2,6 +2,7 @@ package com.java.treatmentservice.grpc;
 
 import com.java.treatmentservice.dto.TreatmentRequestDTO;
 import com.java.treatmentservice.dto.TreatmentResponseDTO;
+import com.java.treatmentservice.mapper.TreatmentGrpcMapper;
 import com.java.treatmentservice.service.TreatmentService;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
@@ -9,7 +10,6 @@ import treatment.CreateTreatmentResponse;
 import treatment.TreatmentServiceGrpc;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @GrpcService
 public class TreatmentGrpcService extends TreatmentServiceGrpc.TreatmentServiceImplBase {
@@ -25,13 +25,7 @@ public class TreatmentGrpcService extends TreatmentServiceGrpc.TreatmentServiceI
 
         TreatmentResponseDTO treatmentResponseDTO = treatmentService.getTreatmentById(getTreatmentByIdRequest.getId());
 
-        treatment.Treatment grpcTreatment = treatment.Treatment.newBuilder()
-                .setId(treatmentResponseDTO.getId())
-                .setName(treatmentResponseDTO.getName())
-                .setDescription(treatmentResponseDTO.getDescription())
-                .setPrice(treatmentResponseDTO.getPrice())
-                .setDuration(treatmentResponseDTO.getDuration())
-                .build();
+        treatment.Treatment grpcTreatment = TreatmentGrpcMapper.toGrpc(treatmentResponseDTO);
 
         treatment.GetTreatmentByIdResponse getTreatmentByIdResponse = treatment.GetTreatmentByIdResponse.newBuilder()
                 .setTreatment(grpcTreatment).build();
@@ -46,13 +40,7 @@ public class TreatmentGrpcService extends TreatmentServiceGrpc.TreatmentServiceI
 
         List<TreatmentResponseDTO> allTreatments = treatmentService.getTreatments();
 
-        List<treatment.Treatment> grpcTreatments = allTreatments.stream().map(dto -> treatment.Treatment.newBuilder()
-                .setId(dto.getId())
-                .setName(dto.getName())
-                .setDescription(dto.getDescription())
-                .setPrice(dto.getPrice())
-                .setDuration(dto.getDuration())
-                .build()).collect(Collectors.toList());
+        List<treatment.Treatment> grpcTreatments = TreatmentGrpcMapper.toListGrpc(allTreatments);
 
         treatment.GetAllTreatmentsResponse getAllTreatmentsResponse = treatment.GetAllTreatmentsResponse.newBuilder()
                 .addAllTreatments(grpcTreatments).build();
@@ -72,13 +60,7 @@ public class TreatmentGrpcService extends TreatmentServiceGrpc.TreatmentServiceI
 
         TreatmentResponseDTO treatmentResponseDTO = treatmentService.createTreatment(treatmentRequestDTO);
 
-        treatment.Treatment grpcTreatment = treatment.Treatment.newBuilder()
-                .setId(treatmentResponseDTO.getId())
-                .setName(treatmentResponseDTO.getName())
-                .setDescription(treatmentResponseDTO.getDescription())
-                .setPrice(treatmentResponseDTO.getPrice())
-                .setDuration(treatmentResponseDTO.getDuration())
-                .build();
+        treatment.Treatment grpcTreatment = TreatmentGrpcMapper.toGrpc(treatmentResponseDTO);
 
         treatment.CreateTreatmentResponse createTreatmentResponse = treatment.CreateTreatmentResponse.newBuilder()
                 .setTreatment(grpcTreatment).build();
@@ -99,13 +81,7 @@ public class TreatmentGrpcService extends TreatmentServiceGrpc.TreatmentServiceI
 
         TreatmentResponseDTO treatmentResponseDTO = treatmentService.updateTreatment(updateTreatmentRequest.getId(), treatmentRequestDTO);
 
-        treatment.Treatment grpcTreatment = treatment.Treatment.newBuilder()
-                .setId(treatmentResponseDTO.getId())
-                .setName(treatmentResponseDTO.getName())
-                .setDescription(treatmentResponseDTO.getDescription())
-                .setPrice(treatmentResponseDTO.getPrice())
-                .setDuration(treatmentResponseDTO.getDuration())
-                .build();
+        treatment.Treatment grpcTreatment = TreatmentGrpcMapper.toGrpc(treatmentResponseDTO);
 
         treatment.UpdateTreatmentResponse updateTreatmentResponse = treatment.UpdateTreatmentResponse.newBuilder()
                 .setTreatment(grpcTreatment).build();
