@@ -3,6 +3,7 @@ package com.java.treatmentservice.controller;
 import com.java.treatmentservice.dto.TreatmentRequestDTO;
 import com.java.treatmentservice.dto.TreatmentResponseDTO;
 import com.java.treatmentservice.service.TreatmentService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,12 +30,12 @@ public class TreatmentController {
     }
 
     @PostMapping
-    public ResponseEntity<TreatmentResponseDTO> createTreatment(@RequestBody TreatmentRequestDTO treatmentRequestDTO) {
+    public ResponseEntity<TreatmentResponseDTO> createTreatment(@Valid @RequestBody TreatmentRequestDTO treatmentRequestDTO) {
         return ResponseEntity.ok(treatmentService.createTreatment(treatmentRequestDTO));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TreatmentResponseDTO> updateTreatment(@PathVariable String id, @RequestBody TreatmentRequestDTO treatmentRequestDTO) {
+    public ResponseEntity<TreatmentResponseDTO> updateTreatment(@PathVariable String id,@Valid @RequestBody TreatmentRequestDTO treatmentRequestDTO) {
         return ResponseEntity.ok(treatmentService.updateTreatment(id, treatmentRequestDTO));
     }
 
