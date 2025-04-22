@@ -1,9 +1,10 @@
-package com.java.billingservice.grpc;
+package com.java.billingservice.grpc.billing;
 
 import billing.BillingServiceGrpc;
 import com.java.billingservice.dto.billing.BillingAccountRequestDTO;
 import com.java.billingservice.dto.billing.BillingAccountResponseDTO;
 import com.java.billingservice.service.BillingAccountService;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.slf4j.Logger;
@@ -27,15 +28,22 @@ public class BillingGrpcService extends BillingServiceGrpc.BillingServiceImplBas
 
         log.info("createBillingAccount request received: {}", billingRequest.toString());
 
-        BillingAccountRequestDTO billingAccountRequestDTO = BillingAccountRequestDTO.builder()
-                .patientId(String.valueOf(UUID.fromString(billingRequest.getPatientId())))
-                .build();
+        try {
+            BillingAccountRequestDTO billingAccountRequestDTO = BillingAccountRequestDTO.builder()
+                    .patientId(String.valueOf(UUID.fromString(billingRequest.getPatientId())))
+                    .build();
 
-        BillingAccountResponseDTO billingAccountResponseDTO = billingAccountService.createBillingAccount(billingAccountRequestDTO);
+            BillingAccountResponseDTO billingAccountResponseDTO = billingAccountService.createBillingAccount(billingAccountRequestDTO);
 
-        billing.BillingResponse response = billing.BillingResponse.newBuilder().setAccountId(billingAccountResponseDTO.getId()).setStatus("ACTIVE").build();
+            billing.BillingResponse response = billing.BillingResponse.newBuilder().setAccountId(billingAccountResponseDTO.getId()).setStatus("ACTIVE").build();
 
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription("Internal server error")
+                    .augmentDescription(e.getMessage())
+                    .asRuntimeException());
+        }
     }
 }

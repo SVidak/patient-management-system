@@ -14,7 +14,7 @@ public class BillRequestDTO {
     @NotBlank(message = "Patient ID is required")
     private String patientId;
 
-    @NotBlank(message = "Amount is required")
+    @NotBlank(message = "Treatment is required")
     @PositiveOrZero(message = "Amount must be positive or zero")
     private String amount;
 

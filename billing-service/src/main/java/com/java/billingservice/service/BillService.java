@@ -6,6 +6,8 @@ import com.java.billingservice.exception.BillNotFoundException;
 import com.java.billingservice.exception.BillingAccountNotFoundException;
 import com.java.billingservice.mapper.bill.BillMapper;
 import com.java.billingservice.model.Bill;
+import com.java.billingservice.model.BillItem;
+import com.java.billingservice.model.BillingAccount;
 import com.java.billingservice.repository.BillRepository;
 import com.java.billingservice.repository.BillingAccountRepository;
 import org.springframework.stereotype.Service;
@@ -17,12 +19,14 @@ import java.util.UUID;
 @Service
 public class BillService {
 
+    private final BillItemService billItemService;
     private final BillRepository billRepository;
     private final BillingAccountRepository billingAccountRepository;
 
-    public BillService(BillRepository billRepository, BillingAccountRepository billingAccountRepository) {
+    public BillService(BillRepository billRepository, BillingAccountRepository billingAccountRepository, BillItemService billItemService) {
         this.billRepository = billRepository;
         this.billingAccountRepository = billingAccountRepository;
+        this.billItemService = billItemService;
     }
 
     public List<BillResponseDTO> getBills() {
@@ -38,15 +42,28 @@ public class BillService {
         return BillMapper.toBillResponseDTO(bill);
     }
 
-    public BillResponseDTO createBill(BillRequestDTO billRequestDTO) {
+    public BillResponseDTO createBill(BillRequestDTO billRequestDTO, List<String> treatmentIds) {
 
-        Bill newBill = BillMapper.toBill(billRequestDTO);
-        newBill.setCreatedDate(LocalDate.now());
-        newBill.setBillingAccount(billingAccountRepository.findByPatientId(UUID.fromString(billRequestDTO.getPatientId()))
-                .orElseThrow(() -> new BillingAccountNotFoundException("BillingAccount with Patient ID :" + billRequestDTO.getPatientId() + "not found")));
+        BillingAccount billingAccount = billingAccountRepository.findByPatientId(UUID.fromString(billRequestDTO.getPatientId()))
+                .orElseThrow(() -> new BillingAccountNotFoundException("BillingAccount with ID :" + billRequestDTO.getPatientId() + "not found"));
 
-        billRepository.save(newBill);
+        List<BillItem> billItems = billItemService.createBillItemsFromTreatmentIds(treatmentIds);
 
-        return BillMapper.toBillResponseDTO(newBill);
+        Long totalAmount = billItems.stream().mapToLong(BillItem::getPrice).sum();
+
+        Bill bill = Bill.builder()
+                .patientId(billingAccount.getPatientId())
+                .createdDate(LocalDate.now())
+                .amount(totalAmount)
+                .status("CREATED")
+                .billingAccount(billingAccount)
+                .build();
+
+        billItems.forEach(item -> item.setBill(bill));
+        bill.setBillItems(billItems);
+
+        billRepository.save(bill);
+
+        return BillMapper.toBillResponseDTO(bill);
     }
 }

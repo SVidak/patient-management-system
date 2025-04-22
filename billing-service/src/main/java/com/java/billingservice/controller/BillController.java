@@ -24,8 +24,10 @@ public class BillController {
         return ResponseEntity.ok(billService.getBills());
     }
 
-    @PostMapping
-    public ResponseEntity<BillResponseDTO> createBill(@RequestBody BillRequestDTO billRequestDTO) {
-        return ResponseEntity.ok(billService.createBill(billRequestDTO));
+    @PostMapping("/create/{treatmentIds}")
+    public ResponseEntity<BillResponseDTO> createBill(@RequestBody BillRequestDTO billRequestDTO, @PathVariable List<String> treatmentIds) {
+
+        return ResponseEntity.ok(billService.createBill(billRequestDTO, treatmentIds));
     }
+
 }
