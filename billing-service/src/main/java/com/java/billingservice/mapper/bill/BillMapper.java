@@ -2,9 +2,11 @@ package com.java.billingservice.mapper.bill;
 
 import com.java.billingservice.dto.bill.BillRequestDTO;
 import com.java.billingservice.dto.bill.BillResponseDTO;
+import com.java.billingservice.mapper.item.BillItemMapper;
 import com.java.billingservice.model.Bill;
 
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class BillMapper {
 
@@ -18,6 +20,7 @@ public class BillMapper {
         billResponseDTO.setPayedDate(bill.getPayedDate() != null ?
                 bill.getPayedDate().toString() : null);
         billResponseDTO.setStatus(bill.getStatus());
+        billResponseDTO.setBillItems(bill.getBillItems().stream().map(BillItemMapper::toBillItemResponseDTO).collect(Collectors.toList()));
 
         return billResponseDTO;
     }

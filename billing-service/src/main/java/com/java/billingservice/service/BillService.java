@@ -42,12 +42,12 @@ public class BillService {
         return BillMapper.toBillResponseDTO(bill);
     }
 
-    public BillResponseDTO createBill(BillRequestDTO billRequestDTO, List<String> treatmentIds) {
+    public BillResponseDTO createBill(BillRequestDTO billRequestDTO) {
 
         BillingAccount billingAccount = billingAccountRepository.findByPatientId(UUID.fromString(billRequestDTO.getPatientId()))
                 .orElseThrow(() -> new BillingAccountNotFoundException("BillingAccount with ID :" + billRequestDTO.getPatientId() + "not found"));
 
-        List<BillItem> billItems = billItemService.createBillItemsFromTreatmentIds(treatmentIds);
+        List<BillItem> billItems = billItemService.createBillItemsFromTreatmentIds(billRequestDTO.getTreatmentIds());
 
         Long totalAmount = billItems.stream().mapToLong(BillItem::getPrice).sum();
 

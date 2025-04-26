@@ -4,6 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,6 +22,9 @@ public class BillRequestDTO {
 
     @Builder.Default
     private String status = "PENDING";
+
+    @NotBlank
+    private List<String> treatmentIds;
 
 }
 
