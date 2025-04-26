@@ -9,19 +9,17 @@ import java.util.UUID;
 public class BillingAccountMapper {
 
     public static BillingAccountResponseDTO toBillingAccountResponseDTO(BillingAccount billingAccount) {
-        BillingAccountResponseDTO billingAccountResponseDTO = new BillingAccountResponseDTO();
-        billingAccountResponseDTO.setId(billingAccount.getId().toString());
-        billingAccountResponseDTO.setPatientId(billingAccount.getPatientId().toString());
-        billingAccountResponseDTO.setCreationDate(billingAccount.getCreationDate().toString());
-        billingAccountResponseDTO.setUpdateDate(billingAccount.getLastUpdateDate().toString());
-
-        return billingAccountResponseDTO;
+        return BillingAccountResponseDTO.builder()
+                .id(billingAccount.getId().toString())
+                .patientId(billingAccount.getPatientId().toString())
+                .creationDate(billingAccount.getCreationDate().toString())
+                .updateDate(billingAccount.getLastUpdateDate().toString())
+                .build();
     }
 
     public static BillingAccount toBillingAccount(BillingAccountRequestDTO billingAccountRequestDTO) {
-        BillingAccount billingAccount = new BillingAccount();
-        billingAccount.setPatientId(UUID.fromString(billingAccountRequestDTO.getPatientId()));
-
-        return billingAccount;
+        return BillingAccount.builder()
+                .patientId(UUID.fromString(billingAccountRequestDTO.getPatientId()))
+                .build();
     }
 }

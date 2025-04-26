@@ -6,24 +6,22 @@ import com.java.billingservice.model.BillItem;
 public class BillItemMapper {
 
     public static BillItemResponseDTO toBillItemResponseDTO(BillItem billItem) {
-        BillItemResponseDTO billItemResponseDTO = new BillItemResponseDTO();
-        billItemResponseDTO.setId(billItem.getId().toString());
-        billItemResponseDTO.setTreatmentId(billItem.getTreatmentId());
-        billItemResponseDTO.setName(billItem.getName());
-        billItemResponseDTO.setDescription(billItem.getDescription());
-        billItemResponseDTO.setPrice(billItem.getPrice().toString());
-        billItemResponseDTO.setBillId(billItem.getBill().getId().toString());
-
-        return billItemResponseDTO;
+        return BillItemResponseDTO.builder()
+                .id(billItem.getId().toString())
+                .treatmentId(billItem.getTreatmentId())
+                .name(billItem.getName())
+                .description(billItem.getDescription())
+                .price(billItem.getPrice().toString())
+                .billId(billItem.getId().toString())
+                .build();
     }
 
     public static BillItem toBillItem(BillItemResponseDTO billItemResponseDTO) {
-        BillItem billItem = new BillItem();
-        billItem.setTreatmentId(billItemResponseDTO.getTreatmentId());
-        billItem.setName(billItemResponseDTO.getName());
-        billItem.setDescription(billItemResponseDTO.getDescription());
-        billItem.setPrice(billItem.getPrice());
-
-        return billItem;
+        return BillItem.builder()
+                .treatmentId(billItemResponseDTO.getTreatmentId())
+                .name(billItemResponseDTO.getName())
+                .description(billItemResponseDTO.getDescription())
+                .price(Long.valueOf(billItemResponseDTO.getPrice()))
+                .build();
     }
 }

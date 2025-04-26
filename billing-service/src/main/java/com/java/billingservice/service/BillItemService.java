@@ -2,18 +2,16 @@ package com.java.billingservice.service;
 
 import com.java.billingservice.grpc.treatment.TreatmentServiceGrpcClient;
 import com.java.billingservice.model.BillItem;
-import com.java.billingservice.repository.BillItemRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class BillItemService {
 
-    private final BillItemRepository billItemRepository;
     private final TreatmentServiceGrpcClient treatmentServiceGrpcClient;
 
-    public BillItemService(BillItemRepository billItemRepository, TreatmentServiceGrpcClient treatmentServiceGrpcClient) {
-        this.billItemRepository = billItemRepository;
+    public BillItemService(TreatmentServiceGrpcClient treatmentServiceGrpcClient) {
         this.treatmentServiceGrpcClient = treatmentServiceGrpcClient;
     }
 
@@ -26,6 +24,6 @@ public class BillItemService {
                         .description(response.getTreatment().getDescription())
                         .price(Long.valueOf(response.getTreatment().getPrice()))
                         .build())
-                .toList();
+                .collect(Collectors.toList());
     }
 }

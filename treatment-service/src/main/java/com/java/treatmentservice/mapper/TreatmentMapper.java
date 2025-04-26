@@ -7,23 +7,21 @@ import com.java.treatmentservice.model.Treatment;
 public class TreatmentMapper {
 
     public static TreatmentResponseDTO toTreatmentResponseDTO(Treatment treatment) {
-        TreatmentResponseDTO treatmentResponseDTO = new TreatmentResponseDTO();
-        treatmentResponseDTO.setId(treatment.getId());
-        treatmentResponseDTO.setName(treatment.getName());
-        treatmentResponseDTO.setDescription(treatment.getDescription());
-        treatmentResponseDTO.setPrice(treatment.getPrice());
-        treatmentResponseDTO.setDuration(treatment.getDuration());
-
-        return treatmentResponseDTO;
+        return TreatmentResponseDTO.builder()
+                .id(treatment.getId())
+                .name(treatment.getName())
+                .description(treatment.getDescription())
+                .price(treatment.getPrice())
+                .duration(treatment.getDuration())
+                .build();
     }
 
     public static Treatment toTreatment(TreatmentRequestDTO treatmentRequestDTO) {
-        Treatment treatment = new Treatment();
-        treatment.setName(treatmentRequestDTO.getName());
-        treatment.setDescription(treatmentRequestDTO.getDescription());
-        treatment.setPrice(treatmentRequestDTO.getPrice());
-        treatment.setDuration(treatmentRequestDTO.getDuration());
-
-        return treatment;
+        return Treatment.builder()
+                .name(treatmentRequestDTO.getName())
+                .description(treatmentRequestDTO.getDescription())
+                .price(treatmentRequestDTO.getPrice())
+                .duration(treatmentRequestDTO.getDuration())
+                .build();
     }
 }

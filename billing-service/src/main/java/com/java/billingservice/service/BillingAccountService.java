@@ -62,7 +62,6 @@ public class BillingAccountService {
 
         billingAccount.setLastUpdateDate(LocalDate.now());
 
-        //Add bills to account
         billingAccountRepository.save(billingAccount);
 
         return BillingAccountMapper.toBillingAccountResponseDTO(billingAccount);
