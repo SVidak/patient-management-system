@@ -12,7 +12,7 @@ public class BillItemMapper {
                 .name(billItem.getName())
                 .description(billItem.getDescription())
                 .price(billItem.getPrice().toString())
-                .billId(billItem.getId().toString())
+                .billId(billItem.getBill().getId().toString())
                 .build();
     }
 

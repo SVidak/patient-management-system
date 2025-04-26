@@ -15,7 +15,7 @@ public class BillMapper {
                 .id(bill.getId().toString())
                 .patientId(bill.getPatientId().toString())
                 .amount(bill.getAmount().toString())
-                .billingAccountId(bill.getBillingAccount().toString())
+                .billingAccountId(bill.getBillingAccount().getId().toString())
                 .createdDate(bill.getCreatedDate().toString())
                 .payedDate(bill.getPayedDate() != null ? bill.getPayedDate().toString() : null)
                 .status(bill.getStatus())
