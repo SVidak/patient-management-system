@@ -1,8 +1,8 @@
-name: Build and Push Docker Images
+name: Build and Push Services with Databases
 
 on:
   push:
-    branches: [ "billing-service-crud" ]
+    branches: [ "main" ]
 
 env:
   DOCKER_HUB_REPOSITORY: svidak/patient-management-system
@@ -16,6 +16,55 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Start Docker services
+        run: |
+          # Start patient-service-db (PostgreSQL)
+          docker run -d --name patient-service-db \
+            -p 5100:5432 \
+            -e POSTGRES_DB=db \
+            -e POSTGRES_USER=root \
+            -e POSTGRES_PASSWORD=root \
+            postgres:latest
+          
+          # Start billing-service-db (PostgreSQL)
+          docker run -d --name billing-service-db \
+            -p 5200:5432 \
+            -e POSTGRES_DB=db \
+            -e POSTGRES_USER=root \
+            -e POSTGRES_PASSWORD=root \
+            postgres:latest
+          
+          # Start treatment-service-db (MongoDB)
+          docker run -d --name treatment-service-db \
+            -p 5300:27017 \
+            -e MONGO_INITDB_DATABASE=db \
+            -e MONGO_INITDB_ROOT_USERNAME=root \
+            -e MONGO_INITDB_ROOT_PASSWORD=root \
+            mongo:latest
+          
+          # Start Kafka
+          docker run -d --name kafka \
+            -p 9092:9092 \
+            -p 9094:9094 \
+            -e KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094 \
+            -e KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER \
+            -e KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT \
+            -e KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094 \
+            -e KAFKA_CFG_NODE_ID=0 \
+            -e KAFKA_CFG_PROCESS_ROLES=controller,broker \
+            bitnami/kafka:latest
+          
+          # Wait for databases to be ready
+          docker exec patient-service-db pg_isready -U root -d db -t 30
+          docker exec billing-service-db pg_isready -U root -d db -t 30
+          until docker exec treatment-service-db mongosh --eval "db.stats()" --username root --password root --quiet; do sleep 1; done
+
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
@@ -23,21 +72,44 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
       - name: Build and push Patient Service
+        working-directory: ./patient-service
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5100/db
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: root
+          SPRING_KAFKA_BOOTSTRAP_SERVERS: localhost:9092
         run: |
-          docker build -t $DOCKER_HUB_REPOSITORY:patient-service-latest ./patient-service
+          mvn spring-boot:build-image -Dspring-boot.build-image.imageName=$DOCKER_HUB_REPOSITORY:patient-service-latest
           docker push $DOCKER_HUB_REPOSITORY:patient-service-latest
 
       - name: Build and push Billing Service
+        working-directory: ./billing-service
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5200/db
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: root
         run: |
-          docker build -t $DOCKER_HUB_REPOSITORY:billing-service-latest ./billing-service
+          mvn spring-boot:build-image -Dspring-boot.build-image.imageName=$DOCKER_HUB_REPOSITORY:billing-service-latest
           docker push $DOCKER_HUB_REPOSITORY:billing-service-latest
 
       - name: Build and push Treatment Service
+        working-directory: ./treatment-service
+        env:
+          SPRING_DATA_MONGODB_URI: mongodb://root:root@localhost:5300/db?authSource=admin
         run: |
-          docker build -t $DOCKER_HUB_REPOSITORY:treatment-service-latest ./treatment-service
+          mvn spring-boot:build-image -Dspring-boot.build-image.imageName=$DOCKER_HUB_REPOSITORY:treatment-service-latest
           docker push $DOCKER_HUB_REPOSITORY:treatment-service-latest
 
       - name: Build and push Analytics Service
+        working-directory: ./analytics-service
+        env:
+          SPRING_KAFKA_BOOTSTRAP_SERVERS: localhost:9092
         run: |
-          docker build -t $DOCKER_HUB_REPOSITORY:analytics-service-latest ./analytics-service
+          mvn spring-boot:build-image -Dspring-boot.build-image.imageName=$DOCKER_HUB_REPOSITORY:analytics-service-latest
           docker push $DOCKER_HUB_REPOSITORY:analytics-service-latest
+
+      - name: Clean up containers
+        if: always()
+        run: |
+          docker stop patient-service-db billing-service-db treatment-service-db kafka || true
+          docker rm patient-service-db billing-service-db treatment-service-db kafka || true
