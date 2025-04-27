@@ -2,7 +2,7 @@ name: Build and Push Docker Images
 
 on:
   push:
-    branches: [ "billing-service-crud" ]
+    branches: [ "main" ]
 
 env:
   DOCKER_HUB_REPOSITORY: svidak/patient-management-system
