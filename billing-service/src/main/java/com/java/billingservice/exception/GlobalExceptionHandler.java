@@ -34,6 +34,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(errors);
     }
 
+    @ExceptionHandler(BillNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleBillNotFoundException(BillNotFoundException ex){
 
         log.warn("Bill with ID {} not found", ex.getMessage());
