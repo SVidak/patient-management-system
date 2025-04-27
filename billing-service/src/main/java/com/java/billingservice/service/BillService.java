@@ -35,6 +35,12 @@ public class BillService {
         return bills.stream().map(BillMapper::toBillResponseDTO).toList();
     }
 
+    public List<BillResponseDTO> getBillsByPatientId(UUID patientId) {
+        List<Bill> bills = billRepository.findAllByPatientId(patientId);
+
+        return bills.stream().map(BillMapper::toBillResponseDTO).toList();
+    }
+
     public BillResponseDTO getBillById(UUID id) {
         Bill bill = billRepository.findById(id)
                 .orElseThrow(() -> new BillNotFoundException("Bill with ID :" + id + "not found"));
@@ -65,5 +71,21 @@ public class BillService {
         billRepository.save(bill);
 
         return BillMapper.toBillResponseDTO(bill);
+    }
+
+    public BillResponseDTO updateBill(UUID id, BillRequestDTO billRequestDTO) {
+
+        Bill bill = billRepository.findById(id)
+                .orElseThrow(() -> new BillNotFoundException("Bill with ID :" + id + "not found"));
+
+        bill.setStatus("PAYED");
+        billRepository.save(bill);
+
+        return BillMapper.toBillResponseDTO(billRepository.save(bill));
+    }
+
+    public void deleteBillById(UUID id) {
+
+        billRepository.deleteById(id);
     }
 }

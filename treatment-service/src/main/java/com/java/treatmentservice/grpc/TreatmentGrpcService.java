@@ -10,9 +10,7 @@ import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import treatment.CreateTreatmentResponse;
-import treatment.TreatmentServiceGrpc;
-
+import treatment.*;
 import java.util.List;
 
 @GrpcService
@@ -26,16 +24,16 @@ public class TreatmentGrpcService extends TreatmentServiceGrpc.TreatmentServiceI
     }
 
     @Override
-    public void getTreatmentById(treatment.GetTreatmentByIdRequest getTreatmentByIdRequest, StreamObserver<treatment.GetTreatmentByIdResponse> responseObserver) {
+    public void getTreatmentById(GetTreatmentByIdRequest getTreatmentByIdRequest, StreamObserver<GetTreatmentByIdResponse> responseObserver) {
 
         log.info("getTreatmentById request received: {}", getTreatmentByIdRequest.toString());
 
         try {
             TreatmentResponseDTO treatmentResponseDTO = treatmentService.getTreatmentById(getTreatmentByIdRequest.getId());
 
-            treatment.Treatment grpcTreatment = TreatmentGrpcMapper.toGrpc(treatmentResponseDTO);
+            Treatment grpcTreatment = TreatmentGrpcMapper.toGrpc(treatmentResponseDTO);
 
-            treatment.GetTreatmentByIdResponse getTreatmentByIdResponse = treatment.GetTreatmentByIdResponse.newBuilder()
+            GetTreatmentByIdResponse getTreatmentByIdResponse = GetTreatmentByIdResponse.newBuilder()
                     .setTreatment(grpcTreatment).build();
 
 
@@ -54,16 +52,16 @@ public class TreatmentGrpcService extends TreatmentServiceGrpc.TreatmentServiceI
     }
 
     @Override
-    public void getAllTreatments(treatment.GetAllTreatmentsRequest getAllTreatmentsRequest, StreamObserver<treatment.GetAllTreatmentsResponse> responseObserver) {
+    public void getAllTreatments(GetAllTreatmentsRequest getAllTreatmentsRequest, StreamObserver<GetAllTreatmentsResponse> responseObserver) {
 
         log.info("getAllTreatments request received: {}", getAllTreatmentsRequest.toString());
 
         try {
             List<TreatmentResponseDTO> allTreatments = treatmentService.getTreatments();
 
-            List<treatment.Treatment> grpcTreatments = TreatmentGrpcMapper.toListGrpc(allTreatments);
+            List<Treatment> grpcTreatments = TreatmentGrpcMapper.toListGrpc(allTreatments);
 
-            treatment.GetAllTreatmentsResponse getAllTreatmentsResponse = treatment.GetAllTreatmentsResponse.newBuilder()
+            GetAllTreatmentsResponse getAllTreatmentsResponse = GetAllTreatmentsResponse.newBuilder()
                     .addAllTreatments(grpcTreatments).build();
 
             responseObserver.onNext(getAllTreatmentsResponse);
@@ -77,7 +75,7 @@ public class TreatmentGrpcService extends TreatmentServiceGrpc.TreatmentServiceI
     }
 
     @Override
-    public void createTreatment(treatment.CreateTreatmentRequest createTreatmentRequest, StreamObserver<CreateTreatmentResponse> responseObserver) {
+    public void createTreatment(CreateTreatmentRequest createTreatmentRequest, StreamObserver<CreateTreatmentResponse> responseObserver) {
 
         log.info("createTreatmentRequest request received: {}", createTreatmentRequest.toString());
 
@@ -86,7 +84,7 @@ public class TreatmentGrpcService extends TreatmentServiceGrpc.TreatmentServiceI
 
             TreatmentResponseDTO treatmentResponseDTO = treatmentService.createTreatment(treatmentRequestDTO);
 
-            treatment.Treatment grpcTreatment = TreatmentGrpcMapper.toGrpc(treatmentResponseDTO);
+            Treatment grpcTreatment = TreatmentGrpcMapper.toGrpc(treatmentResponseDTO);
 
             CreateTreatmentResponse createTreatmentResponse = CreateTreatmentResponse.newBuilder()
                     .setTreatment(grpcTreatment).build();
@@ -102,7 +100,7 @@ public class TreatmentGrpcService extends TreatmentServiceGrpc.TreatmentServiceI
     }
 
     @Override
-    public void updateTreatment(treatment.UpdateTreatmentRequest updateTreatmentRequest, StreamObserver<treatment.UpdateTreatmentResponse> responseObserver) {
+    public void updateTreatment(UpdateTreatmentRequest updateTreatmentRequest, StreamObserver<UpdateTreatmentResponse> responseObserver) {
 
         log.info("updateTreatmentRequest request received: {}", updateTreatmentRequest.toString());
 
@@ -111,9 +109,9 @@ public class TreatmentGrpcService extends TreatmentServiceGrpc.TreatmentServiceI
 
             TreatmentResponseDTO treatmentResponseDTO = treatmentService.updateTreatment(updateTreatmentRequest.getId(), treatmentRequestDTO);
 
-            treatment.Treatment grpcTreatment = TreatmentGrpcMapper.toGrpc(treatmentResponseDTO);
+            Treatment grpcTreatment = TreatmentGrpcMapper.toGrpc(treatmentResponseDTO);
 
-            treatment.UpdateTreatmentResponse updateTreatmentResponse = treatment.UpdateTreatmentResponse.newBuilder()
+            UpdateTreatmentResponse updateTreatmentResponse = UpdateTreatmentResponse.newBuilder()
                     .setTreatment(grpcTreatment).build();
 
             responseObserver.onNext(updateTreatmentResponse);
@@ -131,14 +129,14 @@ public class TreatmentGrpcService extends TreatmentServiceGrpc.TreatmentServiceI
     }
 
     @Override
-    public void deleteTreatment(treatment.DeleteTreatmentRequest deleteTreatmentRequest, StreamObserver<treatment.DeleteTreatmentResponse> responseObserver) {
+    public void deleteTreatment(DeleteTreatmentRequest deleteTreatmentRequest, StreamObserver<DeleteTreatmentResponse> responseObserver) {
 
         log.info("deleteTreatmentRequest request received: {}", deleteTreatmentRequest.toString());
 
         try {
             treatmentService.deleteTreatment(deleteTreatmentRequest.getId());
 
-            responseObserver.onNext(treatment.DeleteTreatmentResponse.newBuilder().build());
+            responseObserver.onNext(DeleteTreatmentResponse.newBuilder().build());
             responseObserver.onCompleted();
         } catch (Exception e) {
             responseObserver.onError(Status.INTERNAL

@@ -1,6 +1,6 @@
 package com.java.billingservice.grpc.billing;
 
-import billing.BillingServiceGrpc;
+import billing.*;
 import com.java.billingservice.dto.billing.BillingAccountRequestDTO;
 import com.java.billingservice.dto.billing.BillingAccountResponseDTO;
 import com.java.billingservice.service.BillingAccountService;
@@ -24,7 +24,7 @@ public class BillingGrpcService extends BillingServiceGrpc.BillingServiceImplBas
     }
 
     @Override
-    public void createBillingAccount(billing.BillingRequest billingRequest, StreamObserver<billing.BillingResponse> responseObserver) {
+    public void createBillingAccount(BillingRequest billingRequest, StreamObserver<BillingResponse> responseObserver) {
 
         log.info("createBillingAccount request received: {}", billingRequest.toString());
 
@@ -35,7 +35,7 @@ public class BillingGrpcService extends BillingServiceGrpc.BillingServiceImplBas
 
             BillingAccountResponseDTO billingAccountResponseDTO = billingAccountService.createBillingAccount(billingAccountRequestDTO);
 
-            billing.BillingResponse response = billing.BillingResponse.newBuilder().setAccountId(billingAccountResponseDTO.getId()).setStatus("ACTIVE").build();
+            BillingResponse response = BillingResponse.newBuilder().setAccountId(billingAccountResponseDTO.getId()).setStatus("ACTIVE").build();
 
             responseObserver.onNext(response);
             responseObserver.onCompleted();

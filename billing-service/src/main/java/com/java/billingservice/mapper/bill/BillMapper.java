@@ -26,8 +26,6 @@ public class BillMapper {
     public static Bill toBill(BillRequestDTO billRequestDTO) {
         return Bill.builder()
                 .patientId(UUID.fromString(billRequestDTO.getPatientId()))
-                .amount(Long.valueOf(billRequestDTO.getAmount()))
-                .status(billRequestDTO.getStatus())
                 .build();
     }
 }
