@@ -108,19 +108,19 @@ jobs:
               bitnami/kafka:latest
           fi
 
-      - name: Wait for services
-        run: |
-          if [[ "$PATIENT_CHANGED" == "true" ]]; then
-            docker exec patient-service-db pg_isready -U root -d db -t 30
-          fi
+      # - name: Wait for services
+      #   run: |
+      #     if [[ "$PATIENT_CHANGED" == "true" ]]; then
+      #       docker exec patient-service-db pg_isready -U root -d db -t 30
+      #     fi
 
-          if [[ "$BILLING_CHANGED" == "true" ]]; then
-            docker exec billing-service-db pg_isready -U root -d db -t 30
-          fi
+      #     if [[ "$BILLING_CHANGED" == "true" ]]; then
+      #       docker exec billing-service-db pg_isready -U root -d db -t 30
+      #     fi
 
-          if [[ "$TREATMENT_CHANGED" == "true" ]]; then
-            until docker exec treatment-service-db mongosh --eval "db.stats()" --username root --password root --quiet; do sleep 1; done
-          fi
+      #     if [[ "$TREATMENT_CHANGED" == "true" ]]; then
+      #       until docker exec treatment-service-db mongosh --eval "db.stats()" --username root --password root --quiet; do sleep 1; done
+      #     fi
 
       - name: Build and push Patient Service
         if: env.PATIENT_CHANGED == 'true'
