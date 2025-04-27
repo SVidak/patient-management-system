@@ -79,7 +79,8 @@ jobs:
           SPRING_DATASOURCE_PASSWORD: root
           SPRING_KAFKA_BOOTSTRAP_SERVERS: localhost:9092
         run: |
-          mvn spring-boot:build-image -Dspring-boot.build-image.imageName=$DOCKER_HUB_REPOSITORY:patient-service-latest
+          mvn clean package spring-boot:build-image
+          docker tag patient-service:latest $DOCKER_HUB_REPOSITORY:patient-service-latest
           docker push $DOCKER_HUB_REPOSITORY:patient-service-latest
 
       - name: Build and push Billing Service
@@ -89,7 +90,8 @@ jobs:
           SPRING_DATASOURCE_USERNAME: root
           SPRING_DATASOURCE_PASSWORD: root
         run: |
-          mvn spring-boot:build-image -Dspring-boot.build-image.imageName=$DOCKER_HUB_REPOSITORY:billing-service-latest
+          mvn clean package spring-boot:build-image
+          docker tag billing-service:latest $DOCKER_HUB_REPOSITORY:billing-service-latest
           docker push $DOCKER_HUB_REPOSITORY:billing-service-latest
 
       - name: Build and push Treatment Service
@@ -97,7 +99,8 @@ jobs:
         env:
           SPRING_DATA_MONGODB_URI: mongodb://root:root@localhost:5300/db?authSource=admin
         run: |
-          mvn spring-boot:build-image -Dspring-boot.build-image.imageName=$DOCKER_HUB_REPOSITORY:treatment-service-latest
+          mvn clean package spring-boot:build-image
+          docker tag treatment-service:latest $DOCKER_HUB_REPOSITORY:treatment-service-latest
           docker push $DOCKER_HUB_REPOSITORY:treatment-service-latest
 
       - name: Build and push Analytics Service
@@ -105,7 +108,8 @@ jobs:
         env:
           SPRING_KAFKA_BOOTSTRAP_SERVERS: localhost:9092
         run: |
-          mvn spring-boot:build-image -Dspring-boot.build-image.imageName=$DOCKER_HUB_REPOSITORY:analytics-service-latest
+          mvn clean package spring-boot:build-image
+          docker tag analytics-service:latest $DOCKER_HUB_REPOSITORY:analytics-service-latest
           docker push $DOCKER_HUB_REPOSITORY:analytics-service-latest
 
       - name: Clean up containers
