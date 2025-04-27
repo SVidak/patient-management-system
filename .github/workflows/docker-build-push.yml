@@ -1,4 +1,4 @@
-name: Build and Push Services with Databases
+name: Build and Push Changed Services
 
 on:
   push:
@@ -22,56 +22,106 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Start Docker services
-        run: |
-          # Start patient-service-db (PostgreSQL)
-          docker run -d --name patient-service-db \
-            -p 5100:5432 \
-            -e POSTGRES_DB=db \
-            -e POSTGRES_USER=root \
-            -e POSTGRES_PASSWORD=root \
-            postgres:latest
-          
-          # Start billing-service-db (PostgreSQL)
-          docker run -d --name billing-service-db \
-            -p 5200:5432 \
-            -e POSTGRES_DB=db \
-            -e POSTGRES_USER=root \
-            -e POSTGRES_PASSWORD=root \
-            postgres:latest
-          
-          # Start treatment-service-db (MongoDB)
-          docker run -d --name treatment-service-db \
-            -p 5300:27017 \
-            -e MONGO_INITDB_DATABASE=db \
-            -e MONGO_INITDB_ROOT_USERNAME=root \
-            -e MONGO_INITDB_ROOT_PASSWORD=root \
-            mongo:latest
-          
-          # Start Kafka
-          docker run -d --name kafka \
-            -p 9092:9092 \
-            -p 9094:9094 \
-            -e KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094 \
-            -e KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER \
-            -e KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT \
-            -e KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094 \
-            -e KAFKA_CFG_NODE_ID=0 \
-            -e KAFKA_CFG_PROCESS_ROLES=controller,broker \
-            bitnami/kafka:latest
-          
-          # Wait for databases to be ready
-          docker exec patient-service-db pg_isready -U root -d db -t 30
-          docker exec billing-service-db pg_isready -U root -d db -t 30
-          until docker exec treatment-service-db mongosh --eval "db.stats()" --username root --password root --quiet; do sleep 1; done
-
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
+      - name: Detect changed services
+        id: changes
+        run: |
+          echo "Checking for changes..."
+          git fetch origin main
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          echo "PATIENT_CHANGED=false" >> $GITHUB_ENV
+          echo "BILLING_CHANGED=false" >> $GITHUB_ENV
+          echo "TREATMENT_CHANGED=false" >> $GITHUB_ENV
+          echo "ANALYTICS_CHANGED=false" >> $GITHUB_ENV
+
+          for file in $CHANGED_FILES; do
+            if [[ "$file" == patient-service/* ]]; then
+              echo "PATIENT_CHANGED=true" >> $GITHUB_ENV
+            fi
+            if [[ "$file" == billing-service/* ]]; then
+              echo "BILLING_CHANGED=true" >> $GITHUB_ENV
+            fi
+            if [[ "$file" == treatment-service/* ]]; then
+              echo "TREATMENT_CHANGED=true" >> $GITHUB_ENV
+            fi
+            if [[ "$file" == analytics-service/* ]]; then
+              echo "ANALYTICS_CHANGED=true" >> $GITHUB_ENV
+            fi
+          done
+
+      - name: Cancel if no services changed
+        if: env.PATIENT_CHANGED == 'false' && env.BILLING_CHANGED == 'false' && env.TREATMENT_CHANGED == 'false' && env.ANALYTICS_CHANGED == 'false'
+        run: |
+          echo "No service changes detected. Skipping build and push."
+          exit 0
+
+      - name: Start necessary Docker services
+        run: |
+          if [[ "$PATIENT_CHANGED" == "true" ]]; then
+            docker run -d --name patient-service-db \
+              -p 5100:5432 \
+              -e POSTGRES_DB=db \
+              -e POSTGRES_USER=root \
+              -e POSTGRES_PASSWORD=root \
+              postgres:latest
+          fi
+          
+          if [[ "$BILLING_CHANGED" == "true" ]]; then
+            docker run -d --name billing-service-db \
+              -p 5200:5432 \
+              -e POSTGRES_DB=db \
+              -e POSTGRES_USER=root \
+              -e POSTGRES_PASSWORD=root \
+              postgres:latest
+          fi
+          
+          if [[ "$TREATMENT_CHANGED" == "true" ]]; then
+            docker run -d --name treatment-service-db \
+              -p 5300:27017 \
+              -e MONGO_INITDB_DATABASE=db \
+              -e MONGO_INITDB_ROOT_USERNAME=root \
+              -e MONGO_INITDB_ROOT_PASSWORD=root \
+              mongo:latest
+          fi
+          
+          if [[ "$PATIENT_CHANGED" == "true" || "$ANALYTICS_CHANGED" == "true" ]]; then
+            docker run -d --name kafka \
+              -p 9092:9092 \
+              -p 9094:9094 \
+              -e KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094 \
+              -e KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER \
+              -e KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT \
+              -e KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094 \
+              -e KAFKA_CFG_NODE_ID=0 \
+              -e KAFKA_CFG_PROCESS_ROLES=controller,broker \
+              bitnami/kafka:latest
+          fi
+
+      - name: Wait for services
+        run: |
+          if [[ "$PATIENT_CHANGED" == "true" ]]; then
+            docker exec patient-service-db pg_isready -U root -d db -t 30
+          fi
+
+          if [[ "$BILLING_CHANGED" == "true" ]]; then
+            docker exec billing-service-db pg_isready -U root -d db -t 30
+          fi
+
+          if [[ "$TREATMENT_CHANGED" == "true" ]]; then
+            until docker exec treatment-service-db mongosh --eval "db.stats()" --username root --password root --quiet; do sleep 1; done
+          fi
+
       - name: Build and push Patient Service
+        if: env.PATIENT_CHANGED == 'true'
         working-directory: ./patient-service
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5100/db
@@ -84,6 +134,7 @@ jobs:
           docker push $DOCKER_HUB_REPOSITORY:patient-service-latest
 
       - name: Build and push Billing Service
+        if: env.BILLING_CHANGED == 'true'
         working-directory: ./billing-service
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5200/db
@@ -95,6 +146,7 @@ jobs:
           docker push $DOCKER_HUB_REPOSITORY:billing-service-latest
 
       - name: Build and push Treatment Service
+        if: env.TREATMENT_CHANGED == 'true'
         working-directory: ./treatment-service
         env:
           SPRING_DATA_MONGODB_URI: mongodb://root:root@localhost:5300/db?authSource=admin
@@ -104,6 +156,7 @@ jobs:
           docker push $DOCKER_HUB_REPOSITORY:treatment-service-latest
 
       - name: Build and push Analytics Service
+        if: env.ANALYTICS_CHANGED == 'true'
         working-directory: ./analytics-service
         env:
           SPRING_KAFKA_BOOTSTRAP_SERVERS: localhost:9092
