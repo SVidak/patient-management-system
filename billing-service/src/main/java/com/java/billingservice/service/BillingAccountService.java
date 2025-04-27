@@ -29,22 +29,20 @@ public class BillingAccountService {
     }
 
     public BillingAccountResponseDTO getBillingAccountById(UUID id) {
-        BillingAccount billingAccount = billingAccountRepository.findById(id)
-                .orElseThrow(() -> new BillingAccountNotFoundException("BillingAccount with ID: " + id + "not found"));
+        BillingAccount billingAccount = billingAccountRepository.findById(id).orElseThrow(() -> new BillingAccountNotFoundException("BillingAccount with ID: " + id + "not found"));
 
         return BillingAccountMapper.toBillingAccountResponseDTO(billingAccount);
     }
 
     public BillingAccountResponseDTO getBillingAccountByPatientId(UUID patientId) {
-        BillingAccount billingAccount = billingAccountRepository.findByPatientId(patientId)
-                .orElseThrow(() -> new BillingAccountNotFoundException("BillingAccount with Patient ID: " + patientId + "not found"));
+        BillingAccount billingAccount = billingAccountRepository.findByPatientId(patientId).orElseThrow(() -> new BillingAccountNotFoundException("BillingAccount with Patient ID: " + patientId + "not found"));
 
         return BillingAccountMapper.toBillingAccountResponseDTO(billingAccount);
     }
 
     public BillingAccountResponseDTO createBillingAccount(BillingAccountRequestDTO billingAccountRequestDTO) {
 
-        if(billingAccountRepository.existsByPatientId(UUID.fromString(billingAccountRequestDTO.getPatientId())))
+        if (billingAccountRepository.existsByPatientId(UUID.fromString(billingAccountRequestDTO.getPatientId())))
             throw new BillingAccountAlreadyExistsException("BillingAccount for Patient: " + billingAccountRequestDTO.getPatientId() + "already exists");
 
         BillingAccount billingAccount = BillingAccountMapper.toBillingAccount(billingAccountRequestDTO);
@@ -57,8 +55,7 @@ public class BillingAccountService {
 
     public BillingAccountResponseDTO updateBillingAccount(UUID patientId, BillingAccountRequestDTO billingAccountRequestDTO) {
 
-        BillingAccount billingAccount = billingAccountRepository.findByPatientId(patientId)
-                .orElseThrow(() -> new BillingAccountNotFoundException("BillingAccount with Patient ID: " + patientId + "not found"));
+        BillingAccount billingAccount = billingAccountRepository.findByPatientId(patientId).orElseThrow(() -> new BillingAccountNotFoundException("BillingAccount with Patient ID: " + patientId + "not found"));
 
         billingAccount.setLastUpdateDate(LocalDate.now());
 

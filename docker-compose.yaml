@@ -14,7 +14,7 @@ services:
       - internal
 
   patient-service:
-    image: patient-service:latest
+    image: svidak/patient-management-system:patient-service-latest
     container_name: patient-service
     ports:
       - "8100:8100"
@@ -46,7 +46,7 @@ services:
       - internal
 
   billing-service:
-    image: billing-service:latest
+    image: svidak/patient-management-system:billing-service-latest
     container_name: billing-service
     ports:
       - "8200:8200"
@@ -81,7 +81,7 @@ services:
       - internal
 
   treatment-service:
-    image: treatment-service:latest
+    image: svidak/patient-management-system:treatment-service-latest
     container_name: treatment-service
     ports:
       - "8500:8500"
@@ -116,7 +116,7 @@ services:
       - internal
 
   analytics-service:
-    image: analytics-service:latest
+    image: svidak/patient-management-system:analytics-service-latest
     container_name: analytics-service
     ports:
       - "8300:8300"
