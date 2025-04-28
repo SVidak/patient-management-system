@@ -98,6 +98,22 @@ services:
     depends_on:
       - treatment-service-db
 
+  doctor-service-db:
+    image: postgres:latest
+    container_name: doctor-service-db
+    ports: 
+      - "5400:5432"
+    environment:
+      POSTGRES_DB: db
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    volumes:
+      - /Users/mac/IdeaProjects/patient-management-volumes/doctor-service-db:/var/lib/postgresql/data
+    networks:
+      - internal
+
+
+
   kafka:
     image: bitnami/kafka:latest
     container_name: kafka
