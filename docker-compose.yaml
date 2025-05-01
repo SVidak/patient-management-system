@@ -112,7 +112,19 @@ services:
     networks:
       - internal
 
-
+  appointment-service-db:
+    image: postgres:latest
+    container_name: appointment-service-db
+    ports: 
+      - "5500:5432"
+    environment:
+      POSTGRES_DB: db
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    volumes:
+      - /Users/mac/IdeaProjects/patient-management-volumes/appointment-service-db:/var/lib/postgresql/data
+    networks:
+      - internal
 
   kafka:
     image: bitnami/kafka:latest
